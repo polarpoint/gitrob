@@ -130,14 +130,23 @@ func (s *Session) InitGithubAccessToken() {
   }
 }
 
-func (s *Session) InitGithubClient() {
+func (s *Session) InitGithubClient()  {
   ctx := context.Background()
   ts := oauth2.StaticTokenSource(
     &oauth2.Token{AccessToken: s.GithubAccessToken},
   )
   tc := oauth2.NewClient(ctx, ts)
-  s.GithubClient = github.NewClient(tc)
+  if *s.Options.GitHubEnterpriseURL == "" {
+    s.GithubClient = github.NewClient(tc)
+  }else
+  {
+    ghc, err := github.NewEnterpriseClient(*s.Options.GitHubEnterpriseURL, *s.Options.GitHubEnterpriseURL, tc)
+    if err == nil {
+      s.GithubClient = ghc
+    }
+  }
   s.GithubClient.UserAgent = fmt.Sprintf("%s v%s", Name, Version)
+
 }
 
 func (s *Session) InitThreads() {

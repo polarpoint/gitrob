@@ -7,7 +7,7 @@ import (
   "sync"
   "time"
 
-  "github.com/michenriksen/gitrob/core"
+  "github.com/polarpoint/gitrob/core"
 )
 
 var (
