@@ -24,6 +24,8 @@ Gitrob is a tool to help find potentially sensitive files pushed to public repos
     Print debugging information
 -github-access-token string
     GitHub access token to use for API requests
+-github-enterprise-url 
+    GitHub Enterprise URL ( i.e https://github.polarpoint.io/api/v3/ )
 -load string
     Load session file
 -no-expand-orgs
