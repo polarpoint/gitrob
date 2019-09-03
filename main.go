@@ -2,16 +2,17 @@ package main
 
 import (
   "fmt"
+  "github.com/polarpoint/gitrob/core"
+  "github.com/benbjohnson/phantomjs"
   "os"
   "strings"
   "sync"
   "time"
-
-  "github.com/michenriksen/gitrob/core"
 )
 
 var (
   sess *core.Session
+  pro *phantomjs.Process
   err  error
 )
 
@@ -211,6 +212,43 @@ func PrintSessionStats(sess *core.Session) {
   sess.Out.Info("Targets.....: %d\n\n", sess.Stats.Targets)
 }
 
+
+func GenerateReport(sess *core.Session )  {
+
+  sess.Out.Important("%s v%s Generating report at %s\n", core.Name, core.Version, sess.Stats.StartedAt.Format(time.RFC3339))
+
+  if err := phantomjs.DefaultProcess.Open(); err != nil {
+    fmt.Println(err)
+    os.Exit(1)
+  }
+  pro :=phantomjs.DefaultProcess
+  defer pro.Close()
+
+  var page, err = pro.CreateWebPage()
+  if err != nil {
+    fmt.Println(err)
+    os.Exit(1)
+  }
+  defer page.Close()
+
+  // Open a URL.
+  if err := page.Open("http://127.0.0.1:9393"); err != nil {
+    fmt.Println(err)
+  }
+
+
+  //// Setup the viewport and render the results view.
+  if err := page.SetViewportSize(1280, 1024); err != nil {
+    fmt.Println(err)
+  }
+  time.Sleep(10 * time.Second)
+  if err := page.Render("report.png", "png", 100); err != nil {
+    fmt.Println(err)
+  }
+}
+
+
+
 func main() {
   if sess, err = core.NewSession(); err != nil {
     fmt.Println(err)
@@ -244,6 +282,6 @@ func main() {
   }
 
   PrintSessionStats(sess)
-  sess.Out.Important("Press Ctrl+C to stop web server and exit.\n\n")
-  select {}
+  GenerateReport(sess)
+
 }
