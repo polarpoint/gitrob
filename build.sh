@@ -28,6 +28,11 @@ create_archive() {
   rm -rf gitrob gitrob.exe
 }
 
+build_linux_arm64() {
+  echo "[*] Building linux/arm64 ..."
+  GOOS=linux GOARCH=arm64 go build -o gitrob ..
+}
+
 build_linux_amd64() {
   echo "[*] Building linux/amd64 ..."
   GOOS=linux GOARCH=amd64 go build -o gitrob ..
@@ -47,6 +52,7 @@ rm -rf $BUILD_FOLDER
 mkdir $BUILD_FOLDER
 cd $BUILD_FOLDER
 
+build_linux_arm64 && create_archive gitrob_linux_arm64_$VERSION.zip
 build_linux_amd64 && create_archive gitrob_linux_amd64_$VERSION.zip
 build_macos_amd64 && create_archive gitrob_macos_amd64_$VERSION.zip
 build_windows_amd64 && create_exe_archive gitrob_windows_amd64_$VERSION.zip

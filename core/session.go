@@ -20,9 +20,9 @@ import (
 const (
   AccessTokenEnvVariable = "GITROB_ACCESS_TOKEN"
 
-  StatusInitializing = "initializing"
+  StatusInitializing = "initialising"
   StatusGathering    = "gathering"
-  StatusAnalyzing    = "analyzing"
+  StatusAnalyzing    = "analysing"
   StatusFinished     = "finished"
 
   githubDotComURL    = "https://github.com"

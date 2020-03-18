@@ -17,6 +17,7 @@ type Options struct {
   Load              *string `json:"-"`
   BindAddress       *string
   Port              *int
+  MetricsPort       *int
   Silent            *bool
   Debug             *bool
   Logins            []string
@@ -35,6 +36,7 @@ func ParseOptions() (Options, error) {
     Load:              flag.String("load", "", "Load session file"),
     BindAddress:       flag.String("bind-address", "127.0.0.1", "Address to bind web server to"),
     Port:              flag.Int("port", 9393, "Port to run web server on"),
+    MetricsPort:    flag.Int("Metrics port", 8080, "Port to run Metrics server on"),
     Silent:            flag.Bool("silent", false, "Suppress all output except for errors"),
     Debug:             flag.Bool("debug", false, "Print debugging information"),
   }

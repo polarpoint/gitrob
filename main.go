@@ -3,18 +3,24 @@ package main
 import (
   "fmt"
   "github.com/benbjohnson/phantomjs"
+  "github.com/polarpoint/gitrob/core"
+  "github.com/prometheus/client_golang/prometheus"
+  "github.com/prometheus/client_golang/prometheus/promhttp"
+  "net/http"
   "os"
   "strings"
   "sync"
   "time"
-  "github.com/polarpoint/gitrob/core"
-
 )
 
 var (
   sess *core.Session
   pro *phantomjs.Process
   err  error
+  findings = prometheus.NewGauge(prometheus.GaugeOpts{
+    Name:        "findings_found",
+    Help:        "number of possible credentials in git",
+  })
 )
 
 func GatherTargets(sess *core.Session) {
@@ -103,14 +109,14 @@ func AnalyzeRepositories(sess *core.Session) {
   wg.Add(threadNum)
   sess.Out.Debug("Threads for repository analysis: %d\n", threadNum)
 
-  sess.Out.Important("Analyzing %d %s...\n", len(sess.Repositories), core.Pluralize(len(sess.Repositories), "repository", "repositories"))
+  sess.Out.Important("Analysing %d %s...\n", len(sess.Repositories), core.Pluralize(len(sess.Repositories), "repository", "repositories"))
 
   githubURL := sess.GithubURL()
 
   for i := 0; i < threadNum; i++ {
     go func(tid int) {
       for {
-        sess.Out.Debug("[THREAD #%d] Requesting new repository to analyze...\n", tid)
+        sess.Out.Debug("[THREAD #%d] Requesting new repository to analyse...\n", tid)
         repo, ok := <-ch
         if !ok {
           sess.Out.Debug("[THREAD #%d] No more tasks, marking WaitGroup as done\n", tid)
@@ -214,9 +220,9 @@ func PrintSessionStats(sess *core.Session) {
 }
 
 
-func GenerateReport(sess *core.Session )  {
+func GenerateImage(sess *core.Session )  {
 
-  sess.Out.Important("%s v%s Generating report at %s\n", core.Name, core.Version, sess.Stats.StartedAt.Format(time.RFC3339))
+  sess.Out.Important("%s v%s Generating image at %s\n", core.Name, core.Version, sess.Stats.StartedAt.Format(time.RFC3339))
 
   if err := phantomjs.DefaultProcess.Open(); err != nil {
     fmt.Println(err)
@@ -248,6 +254,14 @@ func GenerateReport(sess *core.Session )  {
   }
 }
 
+func recordMetrics() {
+  prometheus.MustRegister(findings)
+}
+
+func updateMetrics(sess *core.Session) {
+  findings.Set( float64(sess.Stats.Findings))
+
+}
 
 
 func main() {
@@ -267,7 +281,6 @@ func main() {
     if len(sess.Options.Logins) == 0 {
       sess.Out.Fatal("Please provide at least one GitHub organization or user\n")
     }
-
     GatherTargets(sess)
     GatherRepositories(sess)
     AnalyzeRepositories(sess)
@@ -282,7 +295,12 @@ func main() {
     }
   }
 
+  recordMetrics()
+  updateMetrics(sess)
   PrintSessionStats(sess)
-  GenerateReport(sess)
-
+  GenerateImage(sess)
+  http.Handle("/metrics", promhttp.Handler())
+  http.ListenAndServe(":8080", nil)
+select {}
 }
+
