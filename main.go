@@ -5,8 +5,8 @@ import (
   "github.com/benbjohnson/phantomjs"
   "github.com/polarpoint/gitrob/core"
   "github.com/prometheus/client_golang/prometheus"
-  "github.com/prometheus/client_golang/prometheus/promhttp"
-  "net/http"
+  //"github.com/prometheus/client_golang/prometheus/promhttp"
+  //"net/http"
   "os"
   "strings"
   "sync"
@@ -299,8 +299,8 @@ func main() {
   updateMetrics(sess)
   PrintSessionStats(sess)
   GenerateImage(sess)
-  http.Handle("/metrics", promhttp.Handler())
-  http.ListenAndServe(":8080", nil)
-select {}
+//  http.Handle("/metrics", promhttp.Handler())
+//  http.ListenAndServe(":8080", nil)
+//select {}
 }
 
